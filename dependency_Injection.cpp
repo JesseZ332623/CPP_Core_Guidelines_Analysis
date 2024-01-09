@@ -3,6 +3,8 @@
 #include <memory>
 
 /*
+    3.2 运用依赖注入化解
+
     这个程序演示了如何使用依赖注入替换一个日志记录器，他的类图如下：
 
     抽象基类 Logger 公共派生出 SimpleLogger 类 和 TimeLogger 类

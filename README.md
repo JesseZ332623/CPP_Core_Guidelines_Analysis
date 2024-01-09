@@ -2,7 +2,7 @@
 
 ## 3.2 运用依赖注入化解
 
-一个很简单的日志器切换，可以这么实现：
+下面是一个很简单的日志器切换，可以这么实现
 
 ```C++
 #include <chrono>
@@ -152,7 +152,18 @@ int main(int argc, char const *argv[])
 
 ## 3.3  构建良好的接口
 
-下面是两种不同的求容器内所有字符串元素之和的算法：
+Scott Meyers 对于如何构建良好的接口做出如下总结：
+
+> 让接口易于正确使用，难以错误使用。
+
+因此，本书建议在编写接口时，应该遵循如下规则：
+
+- 接口明确（接口名要尽可能符合这个接口所执行的操作）
+- 接口精确并具有强类型 （不要滥用 auto 关键字，有些时候可以用泛型代替）
+- 保持较低的参数数目（没有人希望看到有 100 个形式参数的接口）
+- 避免相同类型却不相关的参数相邻
+
+下面是两种不同的求容器内所有字符串元素之和的算法
 
 ```C++
 #include <algorithm>
@@ -208,7 +219,7 @@ size_t getLengthCount(std::vector<std::string> & __strVec, Add __add, LengthFunc
 
 而该函数的第二个版本则使用 使用 `std::transform_reduce` 和并行策略（`std::execution::par`）提高了性能，以应对数据量大的情况。孰优孰劣一目了然。
 
-下面是测试用例，结果都相同，在数据量不大的情况下不怎么能体现第二个版本的优越性。
+下面是测试用例，结果都相同，在数据量不大的情况下不怎么能体现第二个版本的优越性（逃）。
 
 ```C++
 int main(int argc, char const *argv[])
@@ -223,6 +234,78 @@ int main(int argc, char const *argv[])
                            [](std::string __s) { return __s.size(); })
           );
           
+    return EXIT_SUCCESS;
+}
+```
+
+当然，对于字符串大小写转换等操作，也可以用 STL 算法去取代循环，提升可读性和安全性，如下面的代码所示：
+
+```C++
+/**
+ * @brief 1. 单输入范围，单输出范围。
+ * 对 begin - end 范围内的数据应用 operation 操作，将结果输出到 out 中（本函数是输出回它自己）。
+ * 这种操作可以用在字符串的大小写转换上，一行代码搞定。
+ *
+ * @param __str 要进行操作的字符串引用
+ *
+ * @return non-return
+ */
+void toLower(std::string &__str);
+
+void toLower(std::string &__str)
+{
+    std::transform(__str.begin(), __str.end(), __str.begin(), [](char __ch) { return std::tolower(__ch); });
+}
+```
+
+此外， `std::transform` 有 `3` 个重载版本，具体内容不在本文档赘述，请参考 `std_transform.cpp` 文件。
+
+### I.13 不要用单个指针来传递数组
+
+在 C++ 中有很多 STL 算法和容器能帮你优雅的解决数组传递的问题，比如
+
+- `std::vector`
+- `std::span`
+
+`std::span` 是一个对象，它可以指代连续存储的一串对象，它永远不是所有者。而这段连续的内存可以是数组，或者带有大小的指针，也可以是 STL 容器，如下面的代码所示：
+
+```C++
+template <typename Type>
+void copyContainer(std::span<const Type> __src, std::span<Type> __dest);
+
+template <typename Type>
+void copyContainer(std::span<const Type> __src, std::span<Type> __dest)
+{
+    if (__dest.size() < __src.size())
+    {
+        throw std::out_of_range("__dest is to small.");
+    }
+
+    auto destIterator = __dest.begin();
+
+    for (const auto & element : __src) { *destIterator++ = element; }
+}
+```
+
+std::span 可以自动推导连续容器（C 风格数组，`std::array`，`std::vector`，`std::string` 等）的大小，避免手动操作内存，增加了安全性。
+
+但恕我直言，这有那么点多此一举，明明拷贝直接用 `std::copy` 就行了（笑哭）。
+
+```C++
+int main(int argc, char const *argv[])
+{
+    std::vector<int> srcVector = {1, 2, 3, 4, 5};
+    std::vector<int> destVector(srcVector.size());
+
+    auto printContent = [](const int & __n) { std::cout << __n << ' '; };
+
+    //copyContainer(srcVector, destVector);
+
+    std::copy(srcVector.begin(), srcVector.end(), destVector.begin());
+
+    std::for_each(srcVector.begin(), srcVector.end(), printContent); std::putchar('\n');
+    std::for_each(destVector.begin(), destVector.end(), printContent);
+
     return EXIT_SUCCESS;
 }
 ```

@@ -61,14 +61,12 @@ void multiplyVectorToTwoVectors(std::vector<int> &__vec, std::vector<int> &__res
 
 void toLower(std::string &__str)
 {
-    std::transform(__str.begin(), __str.end(), __str.begin(), [](char __ch)
-                   { return std::tolower(__ch); });
+    std::transform(__str.begin(), __str.end(), __str.begin(), [](char __ch) { return std::tolower(__ch); });
 }
 
 void addVector(std::vector<int> &__vecA, std::vector<int> &__vecB, std::vector<int> &__result)
 {
-    auto addRule = [](int __a, int __b) -> int
-    { return __a + __b; };
+    auto addRule = [](int __a, int __b) -> int { return __a + __b; };
 
     std::transform(__vecA.begin(), __vecA.end(), __vecB.begin(), std::back_inserter(__result), addRule);
 }

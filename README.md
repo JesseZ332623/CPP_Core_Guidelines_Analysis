@@ -107,7 +107,7 @@ class TimeLogger : public Logger
 class Client
 {
     private:
-        /*一个指向了 Logger 类的分享指针*/
+        /*一个指向了 Logger 类的智能指针*/
         std::shared_ptr<Logger> logger;
 
     public:
@@ -125,8 +125,9 @@ class Client
 };
 ```
 
-由代码可见，所有的日志器类均派生自抽象类 Logger，因此可以很安全的进行类型转换（即抽象父类转换成子类）。
-这样就可以在使用中随意切换日志的类型，如下面代码所示：
+由代码可见，所有的日志器类均派生自抽象类 Logger，因此可以很安全的进行类型转换（即抽象父类转换成其子类）。
+这样就可以在使用中随意切换日志的类型，而且在后续的开发和维护中，可以非常方便的新增其他类型的日志器。
+如下面代码所示：
 
 ```C++
 int main(int argc, char const *argv[])
@@ -148,3 +149,61 @@ int main(int argc, char const *argv[])
     return EXIT_SUCCESS;
 }
 ```
+
+## 3.3  构建良好的接口
+
+下面是两种不同的求容器内所有字符串元素之和的算法：
+
+```C++
+#include <algorithm>
+#include <vector>
+#include <iostream>
+#include <numeric>
+#include <execution>
+
+/**
+ * @brief 使用循环来 串行的求取 vector 内所有字符串的长度之和，这种方法易于理解，
+ * 但数据量大起来就歇菜了。
+ * 
+ * @param __strVec 传入的源 std::vector
+ * 
+ * @return vector 内所有字符串的长度之和
+*/
+size_t getLengthCount(std::vector<std::string> & __strVec);
+
+/**
+ * @brief 使用 std::transform_reduce 和并行策略（std::execution::par）来求取 vector 内所有字符串的长度之和。
+ * 这种方法在数据量较大时非常有效。此外，为了安全起见，使用了函数模板提高安全性，避免滥用 auto。
+ * 
+ * @param __strVec      传入的源 std::vector
+ * @param __add         计算的规则
+ * @param __eachLength  返回每个字符串之长
+ * 
+ * @return vector 内所有字符串的长度之和
+*/
+template <typename Add, typename LengthFunc>
+size_t getLengthCount(std::vector<std::string> & __strVec, Add __add, LengthFunc __eachLength);
+
+size_t getLengthCount(std::vector<std::string> & __strVec)
+{
+    size_t result = 0;
+
+    for (auto elementString : __strVec) { result += elementString.size(); }
+
+    return result;
+}
+
+template <typename Add, typename LengthFunc>
+size_t getLengthCount(std::vector<std::string> & __strVec, Add __add, LengthFunc __eachLength)
+{
+    /*
+        std::execution::par 可以指示该算法利用多核心 CPU 资源，并行地处理多个数据。
+        初始值 std::size_t{0} 表示 reduce 操作的初始结果为 0。
+    */
+    return std::transform_reduce(std::execution::par, __strVec.begin(), __strVec.end(), std::size_t{0}, __add,  __eachLength);
+}
+```
+
+getLengthCount 的第一个版本非常好理解，但是在面对大量数据的时候会有性能问题。
+而该函数的第二个版本则使用 使用 std::transform_reduce 和并行策略（std::execution::par）提高了性能，以应对数据量大的情况。
+孰优孰劣一目了然。

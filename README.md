@@ -207,3 +207,22 @@ size_t getLengthCount(std::vector<std::string> & __strVec, Add __add, LengthFunc
 `getLengthCount` 的第一个版本非常好理解，但是在面对大量数据的时候会有性能问题。
 
 而该函数的第二个版本则使用 使用 `std::transform_reduce` 和并行策略（`std::execution::par`）提高了性能，以应对数据量大的情况。孰优孰劣一目了然。
+
+下面是测试用例，结果都相同，在数据量不大的情况下不怎么能体现第二个版本的优越性。
+
+```C++
+int main(int argc, char const *argv[])
+{
+    std::vector<std::string> stringVector = {"Only", "testing", "pourpose"};
+
+    printf("The sum of string lengths inside the container = %zd.\n", getLengthCount(stringVector));
+
+    printf("The sum of string lengths inside the container = %zd.\n", 
+            getLengthCount(stringVector, 
+                           [](size_t __a, size_t __b) { return __a + __b; }, 
+                           [](std::string __s) { return __s.size(); })
+          );
+          
+    return EXIT_SUCCESS;
+}
+```

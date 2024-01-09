@@ -57,5 +57,6 @@ int main(int argc, char const *argv[])
                            [](size_t __a, size_t __b) { return __a + __b; }, 
                            [](std::string __s) { return __s.size(); })
           );
+          
     return EXIT_SUCCESS;
 }

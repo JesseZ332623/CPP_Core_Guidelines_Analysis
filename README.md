@@ -125,7 +125,7 @@ class Client
 };
 ```
 
-由代码可见，所有的日志器类均派生自抽象类 Logger，因此可以很安全的进行类型转换（即抽象父类转换成其子类）。
+由代码可见，所有的日志器类均派生自抽象类 `Logger`，因此可以很安全的进行类型转换（即抽象父类转换成其子类）。
 这样就可以在使用中随意切换日志的类型，而且在后续的开发和维护中，可以非常方便的新增其他类型的日志器。
 如下面代码所示：
 
@@ -204,6 +204,6 @@ size_t getLengthCount(std::vector<std::string> & __strVec, Add __add, LengthFunc
 }
 ```
 
-getLengthCount 的第一个版本非常好理解，但是在面对大量数据的时候会有性能问题。
-而该函数的第二个版本则使用 使用 std::transform_reduce 和并行策略（std::execution::par）提高了性能，以应对数据量大的情况。
-孰优孰劣一目了然。
+`getLengthCount` 的第一个版本非常好理解，但是在面对大量数据的时候会有性能问题。
+
+而该函数的第二个版本则使用 使用 `std::transform_reduce` 和并行策略（`std::execution::par`）提高了性能，以应对数据量大的情况。孰优孰劣一目了然。

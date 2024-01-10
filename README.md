@@ -309,3 +309,132 @@ int main(int argc, char const *argv[])
     return EXIT_SUCCESS;
 }
 ```
+
+### I.27 I.27 为了库 ABI 的稳定，考虑使用 PImpl 编程技巧
+
+使用 PImpl（Pointer to implementation 指向实现的指针） 编程技巧，将实现的细节放在另一个类上，从而将其从类中移除。
+也就是将接口和数据解耦，用户无需关心接口的参数和实现过程。
+
+这么做的原因是：
+
+- 私有数据成员会参与类的内存布局，而私有函数成员会重载决策，这些依赖意味着对成员实现细节的修改会导致所有类的用户都需要重新编译。
+
+这样做的好处有:
+
+- 隐藏了实现细节,类的接口更清晰
+- 可以独立改变实现而不影响接口
+- 可以减少编译依赖，加快编译速度
+
+持有指向实现的指针（PImpl）的类可将用户隔离在类实现的变化之外，而代价是多了一次间接访问。
+
+下面演示一个简单的，使用了 PImpl 编程技巧的 Widget(小组件) 类:
+
+```C++
+/*接口 Widget.h*/
+#include <iostream>
+#include <algorithm>
+#include <memory>
+
+class Widget
+{
+    private:
+        /*创建一个名为 impl 的类，具体实现放在外部*/
+        class impl;
+
+        /*
+            再创建一个 impl 类型的唯一指针 pimpl，
+            所有类的成员方法都要通过这个智能指针去间接访问 impl 类中的数据或接口。
+        */
+        std::unique_ptr<impl> pimpl;
+
+    public:
+        Widget(int __n);  /*构建函数，定义在实现文件中*/
+
+        void draw();      /*公共接口 draw，将会转发给实现*/
+
+        /*
+            由于没有声明裸指针或其他复杂的数据，
+            所以使用默认的 移动构造函数 和 移动语义 即可。
+        */
+        Widget(Widget &&) = default;
+        Widget & operator=(Widget &&) = default;
+
+        /*禁用 拷贝构造函数 和 拷贝运算符，转而使用移动构造函数*/
+        Widget(const Widget &) = delete;
+        Widget & operator=(Widget &) = delete;
+
+        /*
+            由于没有声明裸指针或其他复杂的数据，
+            使用默认析构函数即可。
+        */
+        ~Widget() = default;
+};
+
+/*impl 类的具体实现*/
+class Widget::impl
+{
+    private:
+        int data;
+    
+    public:
+        impl(int __n) : data(__n) {}
+
+        /*收到来自 Widget 类对象的转发，才会调用 draw 输出信息。*/
+        void draw(const Widget & __w) { std::printf("Drwa data: %d.\n", data); }
+};
+```
+
+```C++
+/*实现 Widget.cpp*/
+#include "./Widget.h"
+
+/*
+    调用 std::unique_ptr<impl> 的构建函数，
+    并使用 std::make_unique<impl>(__n) 去实例化 impl 类，
+    参数 __n 会作为 Widget::impl 类构建函数的参数去创建这个类。
+
+    这样我们在实例化 Widget 类的时候，也实例化了 Widget::impl 类，
+    并使用一个唯一指针去指向它。 
+*/
+Widget::Widget(int __n) : pimpl(std::make_unique<impl>(__n)) {}
+
+/*
+    Widget::draw() 会通过智能指针 pimpl 调用 Widget::impl::draw，
+    并传入 Widget 类对象它本身。
+*/
+void Widget::draw() { pimpl->draw(*this); }
+```
+
+```C++
+/*测试用例*/
+#include "./Widget.h"
+
+int main(int argc, char const *argv[])
+{
+    Widget widgetA(12);
+    Widget widgetB(21);
+
+    /*
+        使用这个类的人不需要关系这个接口需要什么参数和以及具体的实现过程。
+        成功的将数据和接口解耦，即便实现的细节有所变化，使用者也不必担心。
+    */
+    widgetA.draw();
+    widgetB.draw();
+
+    /*使用移动语义，将 B 的所有权转让给 A*/
+    widgetA = std::move(widgetB);
+
+
+    widgetA.draw();
+
+    /*此时 B 就 "悬空" 了，在重新构建它之前，不能再调用它*/
+    //widgetB.draw();
+
+    /*重新构建 widgetB 对象*/
+    widgetB = Widget(123);
+
+    widgetB.draw();
+
+    return EXIT_SUCCESS;
+}
+```

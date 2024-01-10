@@ -244,17 +244,19 @@ int main(int argc, char const *argv[])
 /**
  * @brief 1. 单输入范围，单输出范围。
  * 对 begin - end 范围内的数据应用 operation 操作，将结果输出到 out 中（本函数是输出回它自己）。
- * 这种操作可以用在字符串的大小写转换上，一行代码搞定。
+ * 这种操作可以用在字符串的大小写转换，甚至其他统一操作上，一行代码搞定。
  *
  * @param __str 要进行操作的字符串引用
  *
  * @return non-return
  */
-void toLower(std::string &__str);
+template <typename Operation>
+void unifiedStringOperation(std::string &__str, Operation __op);
 
-void toLower(std::string &__str)
+template <typename Operation>
+void unifiedStringOperation(std::string &__str, Operation __op)
 {
-    std::transform(__str.begin(), __str.end(), __str.begin(), [](char __ch) { return std::tolower(__ch); });
+    std::transform(__str.begin(), __str.end(), __str.begin(), __op);
 }
 ```
 

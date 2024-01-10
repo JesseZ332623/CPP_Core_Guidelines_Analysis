@@ -247,6 +247,7 @@ int main(int argc, char const *argv[])
  * 这种操作可以用在字符串的大小写转换，甚至其他统一操作上，一行代码搞定。
  *
  * @param __str 要进行操作的字符串引用
+ * @param __op  对字符串要执行的统一操作（可以是 Lamba 表达式，函数对象，函数指针）。
  *
  * @return non-return
  */

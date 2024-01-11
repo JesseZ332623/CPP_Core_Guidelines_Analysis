@@ -290,7 +290,7 @@ void copyContainer(std::span<const Type> __src, std::span<Type> __dest)
 }
 ```
 
-std::span 可以自动推导连续容器（C 风格数组，`std::array`，`std::vector`，`std::string` 等）的大小，避免手动操作内存，增加了安全性。
+`std::span` 可以自动推导连续容器（C 风格数组，`std::array`，`std::vector`，`std::string` 等）的大小，避免手动操作内存，增加了安全性。
 
 但恕我直言，这有那么点多此一举，明明拷贝直接用 `std::copy` 就行了（笑哭）。
 

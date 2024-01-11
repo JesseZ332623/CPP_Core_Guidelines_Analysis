@@ -505,7 +505,7 @@ constexpr auto gcd(int __a, int __b)
 ```C++
 int main(int argc, char const *argv[])
 {
-    /*使用 constexpr 让 gcd 在编译器运行，变量 result 是只读的，不容修改。*/
+    /*使用 constexpr 让 gcd 在编译期运行，变量 result 是只读的，不容修改。*/
     constexpr int result = gcd(11, 121);
 
     int a = 11, b = 121;

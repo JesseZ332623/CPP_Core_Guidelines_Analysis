@@ -104,11 +104,19 @@ int main(int argc, char const *argv[])
     std::string strB = {"FDGBEERQGBNAEJRKNGBA"};
     std::string strC = {"12345"};
 
+    std::string emptyString;
+
     unifiedStringOperation(strA, [](char __ch) { return std::toupper(__ch); });
     unifiedStringOperation(strB, [](char __ch) { return std::tolower(__ch); });
     unifiedStringOperation(strC, [](char __ch) { return __ch + 1; });
 
     std::cout << strA << ' ' << strB << ' ' << strC << '\n';
+
+    std::cout << "Press some something you want: \n";
+
+    std::getline(std::cin, emptyString);
+
+    std::cout << emptyString << '\n';
 
     return EXIT_SUCCESS;
 }

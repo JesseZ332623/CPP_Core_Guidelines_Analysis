@@ -534,7 +534,7 @@ int main(int argc, char const *argv[])
 - 移动操作函数
 - `swap` 函数
 
-下面演示一个使用了 noexcept 的函数，它会在内存耗尽时奔溃：
+下面演示一个使用了 `noexcept` 的函数，它会在内存耗尽时奔溃：
 
 ```C++
 /**

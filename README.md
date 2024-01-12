@@ -473,6 +473,15 @@ int main(int argc, char const *argv[])
 - 不依赖外部状态,只依赖输入参数
   - 纯函数的执行只依赖于输入参数,而与外部状态无关
 
+基于上述特征，纯函数就可以：
+
+- 孤立的测试
+- 孤立的验证或者重构
+- 缓存其结果
+- 被自动的重排或者在其他线程上执行
+
+而像 `random()` `time()` 这样的函数就是不纯的，他们会在不同的调用中返回不同的结果。（与函数体之外的状态交互的函数是不纯的）
+
 接下来用 gcd 算法为例，演示编译期求值的例子：
 
 ```C++
@@ -577,7 +586,7 @@ int main(int argc, char const *argv[])
 {
     /*以只读模式打开某个文本文件*/
     std::ifstream targetFileRead("./data/target.txt", std::ios_base::in);
-    
+
     auto showContent = [](const std::string & __s) -> void { std::cout << __s << '\n'; };
     
     /*从文本文件中读取数据到 字符串数组中*/

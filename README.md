@@ -577,7 +577,7 @@ int main(int argc, char const *argv[])
 {
     /*以只读模式打开某个文本文件*/
     std::ifstream targetFileRead("./data/target.txt", std::ios_base::in);
-
+    
     auto showContent = [](const std::string & __s) -> void { std::cout << __s << '\n'; };
     
     /*从文本文件中读取数据到 字符串数组中*/

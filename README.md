@@ -606,8 +606,6 @@ int main(int argc, char const *argv[])
 本书总结了一张表格，它提供一个概览，介绍了函数中传入和传出信息的各种方式：
 
 ![image](https://github.com/JesseZ332623/CPP_Guidelines_Analysis/assets/101250851/fd4a4f0c-8ec8-4c42-a278-24a1dbc04230)
-
-
 *该表的表头描述了数据在拷贝和移动开销方面的特征，而各行则表明了参数的传递方向*
 
 - 数据类型
@@ -630,6 +628,5 @@ int main(int argc, char const *argv[])
 表 4.1 中普通的参数传递规则应该是用户的首选。不过，也有高级的参数传递规则，实际上就是加入了 "入并移入" 的语义。
 
 ![image](https://github.com/JesseZ332623/CPP_Guidelines_Analysis/assets/101250851/e32cb315-85f0-4f00-982e-78b4d138ecf3)
-
 
 在 "入并移入" 调用后，参数处在所谓的被移动上面，这就意味这它处于合法但未定义的状态。所以，在对这个对象进行调用前，必须先初始化。

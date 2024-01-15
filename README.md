@@ -652,7 +652,7 @@ void functionA(const std::string & __s);
 functionB(std::string __s);
 
 /*
-    按值传递，但至少拷贝了一个 4 字节的整数，开销忽略不计。
+    按值传递，但只拷贝了一个 4 字节的整数，开销忽略不计。
 */
 functionC(int __x);
 
@@ -671,3 +671,81 @@ functionD(const int & __x);
 ### F.19 对于 “转发” 参数，使用移动语义来传递，并且只 `std::forward` 该参数
 
 有时用户想完美的转发参数 param，意味着要保持左值的左值性，以及右值的右值性，这样才能 “完美” 地转发参数，使它的语义不变。
+转发参数的典型用例是工厂函数，它通过调用某个用户指定对象的构造函数创建出该对象。用户不知道参数是不是右值，也不知道函数需要多少参数，如下面的函数所示：
+
+```C++
+// forwarding.cpp
+#include <utility>
+
+/**
+ * @brief 使用 std::forward 对用户传入的参数进行完美转发（即保持左值的左值性，以及右值的右值性）
+ * 
+ * @tparam Type~TypeN 使用形参包，可以将 n 个数据打包。
+ * 
+ * @param  typeN     用户传入的 n 个数据的右值引用，都会通过形参包打包。
+ * 
+ * @return 将形参包中的数据全部解包，转发到某个类型的构建函数中，构造出一个临时对象，最后通过移动语义返回。
+*/
+template <typename Type, typename ... TypeN>
+Type create(TypeN && ... typeN)
+{
+    return Type(std::forward<TypeN>(typeN)...);
+}
+```
+
+该函数通过：
+
+- 变长参数模板
+- `std::forward()` 完美转发
+- 移动语义优化
+
+使得它可以高效地将任意数量和类型的参数完美转发给返回类型的构造函数。
+下面是测试用例：
+
+```C++
+// forwarding.cpp
+#include <iostream>
+
+struct MyType
+{
+    private:
+        int count;
+        double score;
+        bool ifValue;
+
+    public:
+        MyType(int __c, double __s, bool __ifVal) : count(__c), score(__s), ifValue(__ifVal) {}
+
+        friend std::ostream & operator<<(std::ostream & __os, struct MyType & myType);
+
+};
+
+std::ostream & operator<<(std::ostream & __os, struct MyType & myType)
+{
+    __os << myType.count << '\t' << myType.score << '\t' << ((myType.ifValue) ? "true" : "false") << '\n';
+
+    return __os;
+}
+
+int main(int argc, char const *argv[])
+{
+    int myTypeCount = 25;
+    // 转发 3 个参数，构建后返回：（左值，右值，右值）
+    MyType myType = create<MyType>(myTypeCount, 88.60, true);
+
+    long double decimal = 3.1415926535;
+    // 转发 1 个参数：（左值）
+    long double myDecimal = create<long double>(decimal);
+
+    // 转发 1 个参数：（右值）
+    int myInteger = create<int>(114514);
+
+    // 无参转发，结果为 0
+    int empty = create<int>();
+
+    std::cout << myType;
+    std::cout << myDecimal << '\t' << myInteger << '\t' << empty << '\n';
+    
+    return EXIT_SUCCESS;
+}
+```

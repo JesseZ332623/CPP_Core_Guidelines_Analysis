@@ -22,9 +22,11 @@ void showStructContence(const struct myStruct * __myStruct)
     printf("%d\t%lf\t%s\n", __myStruct->count, __myStruct->price, __myStruct->describe);
 }
 
-/*
+/**
     在 C 语言中，返回多个值，一般只能返回：数组，字符串，结构体，而且一般只返回它们的指针。
     先演示结构体的返回：
+
+ *  @brief 将数据传入修改结构体后返回这个结构体的指针
 */
 myStruct * modifyStructData(int __c, double __p, const char * __desc, struct myStruct * __beModify)
 {

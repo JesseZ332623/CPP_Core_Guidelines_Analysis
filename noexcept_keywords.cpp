@@ -5,24 +5,24 @@
 #include <fstream>
 
 /*
-    Í¨¹ý½«º¯ÊýÉùÃ÷Îª noexcept£¬¿ÉÒÔ½ûÖ¹¸Ãº¯ÊýÅ×³öÒì³£¡£
-    noexcept ¹Ø¼ü×ÖÔÚ¸ÃÓï¾³ÏÂÒâÎ¶×Å£ºÎÒ²»ÔÚºõÒì³£¡£
+    é€šè¿‡å°†å‡½æ•°å£°æ˜Žä¸º noexceptï¼Œå¯ä»¥ç¦æ­¢è¯¥å‡½æ•°æŠ›å‡ºå¼‚å¸¸ã€‚
+    noexcept å…³é”®å­—åœ¨è¯¥è¯­å¢ƒä¸‹æ„å‘³ç€ï¼šæˆ‘ä¸åœ¨ä¹Žå¼‚å¸¸ã€‚
 
-    ÆäÔ­Òò¿ÉÄÜÊÇ£º³ÌÐòÔ±ÎÞ·¨¶ÔÕâ¸öÒì³£×ö³ö·´Ó¦£¬ÕâÖÖÇé¿öÏÂ¾ÍÖ»ÄÜµ÷ÓÃ std::terminated() È¥Ç¿ÐÐÖÕÖ¹³ÌÐò¡£
+    å…¶åŽŸå› å¯èƒ½æ˜¯ï¼šç¨‹åºå‘˜æ— æ³•å¯¹è¿™ä¸ªå¼‚å¸¸åšå‡ºååº”ï¼Œè¿™ç§æƒ…å†µä¸‹å°±åªèƒ½è°ƒç”¨ std::terminated() åŽ»å¼ºè¡Œç»ˆæ­¢ç¨‹åºã€‚
 
-    ´ËÍâ£¬ÒÔÏÂÀàÐÍµÄº¯ÊýÓÀÔ¶¶¼²»ÒªÅ×Òì³££º
-        Ä¬ÈÏ¹¹½¨£¬¹¹½¨£¬Îö¹¹ º¯Êý
-        ÒÆ¶¯²Ù×÷º¯Êý
-        swap º¯Êý
+    æ­¤å¤–ï¼Œä»¥ä¸‹ç±»åž‹çš„å‡½æ•°æ°¸è¿œéƒ½ä¸è¦æŠ›å¼‚å¸¸ï¼š
+        é»˜è®¤æž„å»ºï¼Œæž„å»ºï¼Œæžæž„ å‡½æ•°
+        ç§»åŠ¨æ“ä½œå‡½æ•°
+        swap å‡½æ•°
 */
 
 /**
- * @brief ´Ó±ê×¼ÊäÈëÁ÷£¨Í¨³£ÊÇ¼üÅÌ£©ÖÐ¶ÁÈ¡Êý¾Ý²¢´æÈëÕâ¸ö×Ö·û´® vector ÖÐ£¬
- * ¸Ãº¯Êý»áÔÚÄÚ´æºÄ¾¡Ê±±ÀÀ£¡£
+ * @brief ä»Žæ ‡å‡†è¾“å…¥æµï¼ˆé€šå¸¸æ˜¯é”®ç›˜ï¼‰ä¸­è¯»å–æ•°æ®å¹¶å­˜å…¥è¿™ä¸ªå­—ç¬¦ä¸² vector ä¸­ï¼Œ
+ * è¯¥å‡½æ•°ä¼šåœ¨å†…å­˜è€—å°½æ—¶å´©æºƒã€‚
  * 
- * @param __is ±ê×¼ÊäÈëÁ÷µÄÒýÓÃ
+ * @param __is æ ‡å‡†è¾“å…¥æµçš„å¼•ç”¨
  * 
- * @return Íê³ÉÊä³öºó·µ»ØµÄ×Ö·û´® vector
+ * @return å®Œæˆè¾“å‡ºåŽè¿”å›žçš„å­—ç¬¦ä¸² vector
 */
 std::vector<std::string> collect(std::istream & __is) noexcept;
 
@@ -31,10 +31,10 @@ std::vector<std::string> collect(std::istream & __is) noexcept
     std::vector<std::string> result;
     
     /*
-        Èô´«ÈëµÄÊäÈëÁ÷ÊÇ std::cin£¬¼´ÖØ¶¨Ïòµ½¼üÅÌ£¬
-        ÔÚÑ­»·ÄÚÃ»ÓÐÊ¹ÓÃ break continue ¹Ø¼ü×ÖµÄ»°£¬¸ÃÑ­»·¾ÍÊÇËÀÑ­»·¡£
+        è‹¥ä¼ å…¥çš„è¾“å…¥æµæ˜¯ std::cinï¼Œå³é‡å®šå‘åˆ°é”®ç›˜ï¼Œ
+        åœ¨å¾ªçŽ¯å†…æ²¡æœ‰ä½¿ç”¨ break continue å…³é”®å­—çš„è¯ï¼Œè¯¥å¾ªçŽ¯å°±æ˜¯æ­»å¾ªçŽ¯ã€‚
 
-        Èô´«ÈëµÄÊÇÒ»¸öÎÄ¼þ std::ifstream »òÕß±ðµÄ³ÌÐò£¨pipe£©£¬ÇÒÊý¾ÝÁ¿×ã¹»´óÊ±£¬Ò²»áÒòÎªÄÚ´æºÄ¾¡±¼À£¡£
+        è‹¥ä¼ å…¥çš„æ˜¯ä¸€ä¸ªæ–‡ä»¶ std::ifstream æˆ–è€…åˆ«çš„ç¨‹åºï¼ˆpipeï¼‰ï¼Œä¸”æ•°æ®é‡è¶³å¤Ÿå¤§æ—¶ï¼Œä¹Ÿä¼šå› ä¸ºå†…å­˜è€—å°½å¥”æºƒã€‚
     */
     for (std::string s; std::getline(__is, s);)
     {
@@ -47,21 +47,13 @@ std::vector<std::string> collect(std::istream & __is) noexcept
     return result;
 }
 
-/*²âÊÔÓÃÀý*/
 int main(int argc, char const *argv[])
 {
-    /*ÒÔÖ»¶ÁÄ£Ê½´ò¿ªÄ³¸öÎÄ±¾ÎÄ¼þ*/
     std::ifstream targetFileRead("./data/target.txt", std::ios_base::in);
-
-    auto showContent = [](const std::string & __s) -> void { std::cout << __s << '\n'; };
     
-    /*´ÓÎÄ±¾ÎÄ¼þÖÐ¶ÁÈ¡Êý¾Ýµ½ ×Ö·û´®Êý×éÖÐ*/
-    std::vector<std::string> stringSetA = collect(targetFileRead);
-    //std::vector<std::string> stringSetB = collect(std::cin);
+    std::vector<std::string> stringSet = collect(targetFileRead);
 
-    /*Êä³öÄÚÈÝ*/
-    std::for_each(stringSetA.begin(), stringSetA.end(), showContent);
-    //std::for_each(stringSetB.begin(), stringSetB.end(), showContent);
+    std::for_each(stringSet.begin(), stringSet.end(), [](const std::string & __s) -> void { std::cout << __s << '\n'; });
 
     return EXIT_SUCCESS;
 }

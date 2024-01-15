@@ -11,9 +11,10 @@ namespace myStd
     /**
      * @brief make_unique 一种可能的实现，利用变长参数模板，std::forward 完美转发，以及移动语义优化。
      * 
-     * @tparam Type 传入参数的类型，使用形参包打包。
+     * @tparam Type 指定 std::unique_ptr 构建的类型
+     * @tparam Args 指定 Type 类型的构造函数的参数类型，使用变参模板打包
      * 
-     * @param __args 用户传入的参数，被形参包打包。
+     * @param __args 用户传入的参数（Args 类型的右值引用），被形参包打包。
      * 
      * @return 解包形参包，通过 std::forward 转发到 Type 类型的构建函数中，构造出一个匿名临时对象，
      * 利用 new 关键在在堆中创建该对象，以移动语义转移所有权给 std::unique_ptr<Type> 的构造函数，

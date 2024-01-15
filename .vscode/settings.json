@@ -55,6 +55,7 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "fstream": "cpp",
-        "set": "cpp"
+        "set": "cpp",
+        "cstring": "cpp"
     }
 }

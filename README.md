@@ -13,6 +13,7 @@
   - [F.16 对于"入"参，拷贝开销低的按值传递，其他类型按 `const` 引用来传递](#f16-对于入参拷贝开销低的按值传递其他类型按-const-引用来传递)
   - [F.19 对于 “转发” 参数，使用移动语义来传递，并且只 `std::forward` 该参数](#f19-对于-转发-参数使用移动语义来传递并且只-stdforward-该参数)
   - [F.21 要返回多个 “出” 值，优先考虑返回结构体或者元组](#f21-要返回多个-出-值优先考虑返回结构体或者元组)
+- [4.3 参数传递：所有权语义](#43-参数传递所有权语义)
 
 ## 3.2 运用依赖注入化解
 
@@ -938,4 +939,127 @@ int main(int argc, char const *argv[])
     
     return EXIT_SUCCESS;
 }
+```
+
+## 4.3 参数传递：所有权语义
+
+除了考虑参数流动的方向，还需要考虑参数传递的过程中，所有权的变化，如表 4.3 所示：
+
+![参数传递的所有权语义](./img/The_ownership_semantics_of_parameter_passing.png)
+
+- `func(value):` 函数 `func` 自己有一份 `value` 的拷贝，因此它是参数的所有者。在函数运行结束后会自动销毁参数。
+- `func(pointer *):` 函数 `func` 借用了资源，因此无权删除该资源。函数在每次使用前都会检查入参是否为空。
+- `func(reference &):` 函数 `func` 借用了资源。和指针不同，引用的值总是合法的。
+- `func(std::unique_ptr):` 函数 `func` 是参数的所有者，调用函数会自动把所有权转给 `std::unique_ptr` 去动态管理。且在函数运行结束后会自动销毁参数。
+- `func(std::shar_ptr):` 函数 `func` 是参数的额外所有者。该函数会延长资源的生存期。在函数调用结束且是最后一个持有这片内存的分享指针，会自动销毁该参数。
+
+下面是所有权语义在实践中的五大变体：
+
+```C++
+// ownerShipSemantic.cpp
+
+#include <iostream>
+#include <memory>
+#include <utility>
+
+/**
+ * 设计一个简单的类，在析构的时候会输出这个类的信息。
+*/
+class MyString
+{
+    private:
+        std::string myString;
+
+    public:
+        explicit MyString(std::string & __s) : myString(__s) {}
+
+        ~MyString()  { printf("destroy object: %s\n", myString.c_str()); }
+};
+
+/*传值*/
+void functionCopy(MyString __myString) {}
+
+/*传指针*/
+void functionPointer(MyString * __myString) {}
+
+/*传引用*/
+void functionReference(MyString & __myString) {}
+
+/*通过 std::unique_ptr 传递*/
+void functionUniquePointer(std::unique_ptr<MyString> __myStringUniquePtr) {}
+
+/*通过 std::shared_ptr 传递*/
+void functionSharedPointer(std::shared_ptr<MyString> __myStringSharedPtr) 
+{ 
+    printf("There are currently [%ld] shared_ptrs pointing to this piece of memory\n", __myStringSharedPtr.use_count()); 
+}
+
+int main(int argc, char const *argv[])
+{
+    puts("Program Begin: ");
+
+    std::string smallyA = "114514";
+    std::string smallyB = "1919810";
+    std::string smallyC = "Fuck You!";
+
+    /*
+        初始化列表初始化（C++11）
+        myString 在 main 中被声明，它会在 main 函数结束后被析构。
+    */
+    MyString myString{smallyA};
+    
+    /*myStringPointer 拿到 myString 的地址*/
+    MyString *myStringPointer = &myString;
+
+    /*myStringReference 与 myString 绑定*/
+    MyString &myStringReference = myString;
+
+    /*创建一个对象由唯一指针 myStringUniquePtr 动态管理*/
+    auto myStringUniquePtr = std::make_unique<MyString>(smallyB);
+
+    /*创建一个对象由分享指针 myStringSharedPtr 动态管理*/
+    auto myStringSharedPtr = std::make_shared<MyString>(smallyC);
+
+    /*
+        按值传递，调用该函数会将 myString 拷贝给 __myString，
+        __myString 的声明周期仅限这个函数，因此会在调用结束后输出 destroy object: 114514
+    */
+    functionCopy(myString);
+
+    /*
+        按指针传递，仅仅传递了 myString 对象的地址，不涉及拷贝或移动。
+        所以这个函数无权销毁指向的对象，故不会输出信息。
+    */
+    functionPointer(myStringPointer);
+
+    /*
+        按引用传递，和传指针类似，也只是借用了资源，不涉及拷贝或移动。
+        所以这个函数无权销毁所绑定的对象，故不会输出信息。
+    */
+    functionReference(myStringReference);
+
+    /*
+        使用 std::move 转移 myStringUniquePtr 的所有权给 __myStringUniquePtr
+        而 __myStringUniquePtr 的生命周期仅限这个函数，因此会在调用结束后输出 destroy object: 1919810
+    */
+    functionUniquePointer(std::move(myStringUniquePtr));
+
+    /*
+        将 myStringSharedPtr 的拷贝传递给 __myStringSharedPtr，涉及到了构建，
+        但是由于 shared_ptr 的特性，此时一共有 2 个 分享指针指向了同一片内存，算是给这片内存 "续命" 了。
+        函数调用后输出：There are currently [2] shared_ptrs pointing to this piece of memory
+    */
+    functionSharedPointer(myStringSharedPtr);
+
+
+    puts("Program End: ");
+    return EXIT_SUCCESS;
+}
+
+/*
+    在 main 函数结束后 myStringSharedPtr 和 myString 的声明周期才算彻底结束，故调用析构函数输出：
+    destroy object: Fuck You!
+    destroy object: 114514
+*/
+
 ```

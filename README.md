@@ -1,5 +1,7 @@
 # 《C++ Core Guidelines Analysis》 学习笔记
 
+![starCount](https://img.shields.io/github/stars/JesseZ332623/CPP_Core_Guidelines_Analysis)
+
 - [3.2 运用依赖注入化解](#32-运用依赖注入化解)
 - [3.3 构建良好的接口](#33-构建良好的接口)
   - [I.13 不要用单个指针来传递数组](#i13-不要用单个指针来传递数组)

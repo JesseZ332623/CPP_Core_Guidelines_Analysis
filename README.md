@@ -802,6 +802,10 @@ int main(int argc, char const *argv[])
 ```C
 // returnPair/std_tuple.cpp
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 struct myStruct 
 {
     int count;
@@ -886,6 +890,9 @@ int main(int argc, char const *argv[])
 
 ```C++
 // returnPair/std_tuple.cpp
+
+#include <iostream>
+#include <tuple>
 
 /**
  * @brief               传入一些数据，将这些数据组装成一个元组并返回

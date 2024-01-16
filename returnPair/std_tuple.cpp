@@ -5,8 +5,8 @@
     F.21 要返回多个 “出” 值，优先考虑返回结构体或者元组。
 */
 
-#define C false
-#define CPP true
+#define C true
+#define CPP false
 
 struct myStruct 
 {
@@ -14,22 +14,57 @@ struct myStruct
     double price;
     char describe[25];
 };
-/*
-    输出结构体的内容
+
+/**
+ * @brief 输出结构体的内容
+ * 
+ * @param __myStruct 传入的非空结构体
+ * 
+ * @return non-return
 */
-void showStructContence(const struct myStruct * __myStruct)
+void showStructContent(const struct myStruct * __myStruct)
 {
+    if (!__myStruct) { return; }
+
     printf("%d\t%lf\t%s\n", __myStruct->count, __myStruct->price, __myStruct->describe);
 }
 
 /**
-    在 C 语言中，返回多个值，一般只能返回：数组，字符串，结构体，而且一般只返回它们的指针。
-    先演示结构体的返回：
-
- *  @brief 将数据传入修改结构体后返回这个结构体的指针
+ * @brief           创建新结构体并返回这个结构体的指针
+ * 
+ * @param __c       数量
+ * @param __p       价格
+ * @param __desc    物品描述
+ * 
+ * @return          新结构体的指针
 */
-myStruct * modifyStructData(int __c, double __p, const char * __desc, struct myStruct * __beModify)
+struct myStruct * createStructData(int __c, double __p, const char * __desc)
 {
+    struct myStruct * newStruct = (myStruct *)malloc(sizeof(myStruct));
+
+    if (!newStruct) { return NULL; }
+
+    newStruct->count = __c;
+    newStruct->price = __p;
+    strcpy(newStruct->describe, __desc);
+
+    return newStruct;
+}
+
+/**
+ * @brief               修改结构体内的数据
+ * 
+ * @param __c           数量
+ * @param __p           价格
+ * @param __desc        物品描述
+ * @param __beModify    要进行修改的目标结构体指针
+ * 
+ * @return              返回修改后的结构体指针
+*/
+struct myStruct * modifyStructData(int __c, double __p, const char * __desc, struct myStruct * __beModify)
+{
+    if (!__beModify) { return NULL; }
+
     __beModify->count = __c;
     __beModify->price = __p;
     strcpy(__beModify->describe, __desc);
@@ -39,6 +74,15 @@ myStruct * modifyStructData(int __c, double __p, const char * __desc, struct myS
 
 /*
     而到了 C++，就有更加先进的方法来返回多个数据。比如在 C++11 版本引入的元组（tuple）。
+*/
+/**
+ * @brief               传入一些数据，将这些数据组装成一个元组并返回
+ * 
+ * @param __c           数量
+ * @param __p           价格
+ * @param __desc        物品描述
+ * 
+ * @return              返回这些数据组装成的元组
 */
 auto returnTuple(int __c, double __p, std::string __desc)
 {
@@ -51,13 +95,15 @@ auto returnTuple(int __c, double __p, std::string __desc)
 int main(int argc, char const *argv[])
 {
 #if C
-    struct myStruct newShop = {100, 12.67, "Apple"};
+    struct myStruct *newShop = createStructData(1000, 90.05, "Phone");
 
-    showStructContence(&newShop);
+    showStructContent(newShop);
 
-    struct myStruct *newShopPointer = modifyStructData(98, 15.50, "Apple", &newShop);
+    modifyStructData(98, 15.50, "Apple", newShop);
 
-    showStructContence(newShopPointer);
+    showStructContent(newShop);
+
+    free(newShop);
 #endif
 
 #if CPP

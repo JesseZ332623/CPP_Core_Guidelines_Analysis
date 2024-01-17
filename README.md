@@ -945,7 +945,7 @@ int main(int argc, char const *argv[])
 
 除了考虑参数流动的方向，还需要考虑参数传递的过程中，所有权的变化，如表 4.3 所示：
 
-![参数传递的所有权语义](./img/The_ownership_semantics_of_parameter_passing.png)
+![参数传递的所有权语义](./img/4.3_参数传递的所有权语义.png)
 
 - `func(value):` 函数 `func` 自己有一份 `value` 的拷贝，因此它是参数的所有者。在函数运行结束后会自动销毁参数。
 - `func(pointer *):` 函数 `func` 借用了资源，因此无权删除该资源。函数在每次使用前都会检查入参是否为空。

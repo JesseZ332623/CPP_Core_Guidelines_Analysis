@@ -1051,7 +1051,6 @@ int main(int argc, char const *argv[])
     */
     functionSharedPointer(myStringSharedPtr);
 
-
     puts("Program End: ");
     return EXIT_SUCCESS;
 }

@@ -1054,7 +1054,6 @@ int main(int argc, char const *argv[])
     puts("Program End: ");
     return EXIT_SUCCESS;
 }
-
 /*
     在 main 函数结束后 myStringSharedPtr 和 myString 的声明周期才算彻底结束，故调用析构函数输出：
     destroy object: Fuck You!

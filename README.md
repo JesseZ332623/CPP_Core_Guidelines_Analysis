@@ -14,6 +14,8 @@
   - [F.19 对于 “转发” 参数，使用移动语义来传递，并且只 `std::forward` 该参数](#f19-对于-转发-参数使用移动语义来传递并且只-stdforward-该参数)
   - [F.21 要返回多个 “出” 值，优先考虑返回结构体或者元组](#f21-要返回多个-出-值优先考虑返回结构体或者元组)
 - [4.3 参数传递：所有权语义](#43-参数传递所有权语义)
+  - [F.42 返回指针（仅仅）用于表示位置](#f42-返回指针仅仅用于表示位置)
+  - [F.44 当不希望发生拷贝，也不需要表达 “没有返回对象” 时，应该返回引用](#f44-当不希望发生拷贝也不需要表达-没有返回对象-时应该返回引用)
 
 ## 3.2 运用依赖注入化解
 
@@ -1145,8 +1147,6 @@ int main(int argc, char const *argv[])
 #include <iostream>
 #include <string>
 
-auto makeLamba();
-
 auto makeLamba()
 {
     /*
@@ -1178,4 +1178,4 @@ int main(int argc, char const *argv[])
 
 ## Author: [JesseZ332623](https://github.com/JesseZ332623)
 
-## Latest Updata: 2024.1.20
+## Latest Updata: 2024.01.20

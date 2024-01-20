@@ -1061,6 +1061,121 @@ int main(int argc, char const *argv[])
 */
 ```
 
+### F.42 返回指针（仅仅）用于表示位置
+
+指针仅仅用于表示一片数据在计算机中的位置，像很多搜索功能的函数（如 `strchr`，或者链表等数据结构的 `Find_Node` 函数）
+
+```C++
+// src\linkList\Link_List.cpp
+/**
+ * @brief 查询目标单向链表中是否含有目标值的节点，若有则返回该节点的地址，若没有则返回空。
+ * 
+ * @param __head_node  链表头节点指针的引用
+ * @param __find_value 要查询的目标值
+ * 
+ * @return 若有则返回该节点的地址，若没有则返回空
+*/
+List_Node * Find_Node(List_Node * &__head_node, const int __find_value);
+
+List_Node * Find_Node(List_Node * &__head_node, const int __find_value)
+{
+    /*
+        若链表为空，或第一个节点的数据就是要搜索的数据，返回头节点指针即可。        
+    */
+    if (!__head_node ||  __head_node->value == __find_value) { return __head_node; }
+
+    /*
+        不断的递归，将指向当前节点的下一个节点，传入函数，知道找到目标值为止。
+    */
+    if (List_Node * targetPointer = Find_Node(__head_node->next, __find_value)) { return targetPointer; }
+
+    /*如果没找到就返回空指针*/
+    return nullptr;
+}
+```
+
+### F.44 当不希望发生拷贝，也不需要表达 “没有返回对象” 时，应该返回引用
+
+当不存在 “没有返回对象” 这种可能性时，就可以返回引用而非指针了，否则会带来不必要的开销。
+
+```C++
+// src\returnReference.cpp
+
+class testClass
+{
+    /*.....*/
+
+#if PRESS_REFERENCE
+    testClass & operator = (const testClass & __tClass)  {/*....*/}
+#endif
+
+#if PRESS_VALUE
+    testClass operator = (const testClass & __tClass) {/*....*/}
+#endif
+
+    /*.....*/
+};
+
+int main(int argc, char const *argv[])
+{
+    testClass a1(10), a2(100), a3(45);
+
+    /*
+        如果拷贝运算符按值传递，
+        这里就多出了两次构造的开销，在这个这个类很庞大的情况下，会产生大量开销。
+    */
+    a1 = a2 = a3;
+
+    return EXIT_SUCCESS;
+}
+```
+
+和不能返回局部变量的地址一样，局部变量的引用同样不能返回，两者都会造成未定义行为。
+
+```C++
+// src\lambaFunctionCapture.cpp
+
+/*
+    functional 头文件提供了很多在函数式编程范式中会用到的工具，
+    通过这些工具可以更方便地使用和组合各种函数或函数对象。
+
+    使用 functional 头文件,可以编写出更加抽象和通用的算法。
+*/
+#include <functional>
+#include <iostream>
+#include <string>
+
+auto makeLamba();
+
+auto makeLamba()
+{
+    /*
+        创建一个临时字符串，它的作用域仅限这个函数。
+    */
+    const std::string tempString = "On Stack Create.";
+
+    /*Lamba 表达式捕获这个字符串，并返回这个字符串，最后函数返回这个 Lamba 表达式*/
+    return [&tempString]() { return tempString; };
+}
+
+int main(int argc, char const *argv[])
+{
+    /*
+        显然，tempString 在函数运行结束后已经过期，
+        期间由于引用传递，没有发生拷贝。
+
+        因此，这个函数所引用的字符串已经不存在了，
+        执行它只会造成未定义行为，要么输出乱码，要么什么也不输出，不可预测。
+    */
+    auto bedLamba = makeLamba();
+
+    /*未定义行为*/
+    std::cout << bedLamba() << '\n';
+    
+    return EXIT_SUCCESS;
+}
+```
+
 ## Author: [JesseZ332623](https://github.com/JesseZ332623)
 
-## Latest Updata: 2024.1.16
+## Latest Updata: 2024.1.20

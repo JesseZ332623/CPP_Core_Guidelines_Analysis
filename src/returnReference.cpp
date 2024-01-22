@@ -67,7 +67,6 @@ int main(int argc, char const *argv[])
     std::cout << a1 << a2 << a3  << '\n';
     return 0;
 }
-
 /*
     Number = 10     Address: 0x4fbddff70c
     Number = 100    Address: 0x4fbddff708

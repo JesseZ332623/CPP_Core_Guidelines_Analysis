@@ -1176,6 +1176,73 @@ int main(int argc, char const *argv[])
 }
 ```
 
+### F.45 and F.48 函数不要返回右值引用，和 `std::move`
+
+函数不要返回右值引用，和 std::move，下面用一个简单的函数举例：
+
+```C++
+int && returnRightValueReference() { return int{114514}; }
+```
+
+`int{114514};` 创建了一个临时的左值，它的作用域仅限这个函数，因此编译器会发出警告：“返回了一个临时的引用”。
+
+```bash
+g++ .\src\return_rightValueReference.cpp -o .\bin\return_rightValueReference
+        .\src\return_rightValueReference.cpp: In function 'int&& returnRightValueReference()':
+        .\src\return_rightValueReference.cpp:11:12: warning: returning reference to temporary [-Wreturn-local-addr]
+        11 |     return int{114514};
+           |            ^~~~
+```
+
+函数返回 `std::move` 的行为同样不可取，由于 `ROV` 和 `NROV` 的拷贝消除，这种操作对于函数来说不是优化而是劣化。
+
+```C++
+/**
+ * @brief 这个函数的执行过程是这样的：
+ *  1. 传入字符串的引用
+ *  2. 调用 move 转移源字符串的所有权，形成一个临时右值引用，然后再返回，可以看作是将 __str 的所有权交给了另一个 字符串。
+ * 
+ * @param __str 传入字符串的引用
+ * 
+ * @return 函数返回后，接收这个函数的变量需要经历拷贝构造，会有不必要的开销。
+ * 由于 ROV 和 NROV 的拷贝消除，这种操作对于函数来说不是优化而是劣化。
+*/
+std::string && returnStdMove(std::string & __str)
+{
+    return std::move(__str);
+}
+```
+
+这里有必要详细解释一下，何为 `ROV` 和 `NROV`：
+
+- `ROV`: 全称为 Right-hand value reference to an Object Value       即对象值的右值引用
+
+- `NROV`:  全称为 Right-hand value reference to an Named Rvalue     即命名右值的右值引用
+
+```C++
+// ROV - 右值引用指向临时对象
+std::string toString(const char * __str)
+{
+    return std::string(__str);
+}
+
+int main(int argc, char const *argv[])
+{
+    // 变量 ROV 是临时字符串的右值引用
+    std::string && ROV = toString("Hello!");
+
+    // NROV - 通过std::move获得右值引用
+    std::string str = "hello";
+
+    // 变量 NROV 是 str 的右值引用 
+    // str 本身变成了空字符串
+    std::string && NROV = std::move(str);
+}
+```
+
+在 `toString` 函数的情况下，变量 `ROV` 绑定了临时匿名 std::string 对象的引用。
+在 `std::move` 函数的情况下，变量 `NROV` 通过 `std::move` 的返回值获得，是对一个有名字的对象的右值引用
+
 ## Author: [JesseZ332623](https://github.com/JesseZ332623)
 
-## Latest Updata: 2024.01.20
+## Latest Updata: 2024.01.22

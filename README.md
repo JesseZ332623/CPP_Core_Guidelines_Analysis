@@ -1241,6 +1241,7 @@ int main(int argc, char const *argv[])
 ```
 
 在 `toString` 函数的情况下，变量 `ROV` 绑定了临时匿名 std::string 对象的引用。
+
 在 `std::move` 函数的情况下，变量 `NROV` 通过 `std::move` 的返回值获得，是对一个有名字的对象的右值引用
 
 ## Author: [JesseZ332623](https://github.com/JesseZ332623)

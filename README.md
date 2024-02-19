@@ -19,6 +19,8 @@
 - [第 5 章：类和类层次结构](#第-5-章类和类层次结构51--52-的内容个人已经掌握因此不在本文档赘述)
   - [5.3 构造函数，赋值运算符 和 析构函数](#53-构造函数赋值运算符-和-析构函数)
     - [C.20 如果能避免定义默认操作，就这么做](#c20-如果能避免定义默认操作就这么做)
+    - [C.21 若 定义或 `=delete` 了任何默认操作，就对所有默认操作都就行了定义或 `=delete`](#c21-若-定义或-delete-了任何默认操作就对所有默认操作都就行了定义或-delete)
+    - [让默认操作保持一致](#c22-让默认操作保持一致)
 
 ## 3.2 运用依赖注入化解
 
@@ -1314,6 +1316,119 @@ class NamedMap
 
 ![C_21_特殊成员函数之间的依赖关系](./img/C_21_特殊成员函数之间的依赖关系.png)
 
+首先，`用户声明` 是指用户为某个特殊成员函数明确的给出了定义，下面的几个操作也算作 `用户声明`：
+
+- 使用 `=default` 请求编译器给出预置定义
+- 使用 `=delete` 删除特殊成员的操作
+- 单纯的使用名字，比如默认构造函数的名字
+
+当用户定义任何构造函数时，默认构造函数就没有了。（默认构造函数是可以在没有参数的情况下调用的构造函数）
+
+当使用 `=default` 或 `=delete` 定义或删除默认构造函数时，其他特殊成员函数都不受影响。
+
+当使用 `=default` 或 `=delete` 定义或删除析构，拷贝构造函数或拷贝构造运算符时，编译器不会生成移动构造函数和移动赋值运算符，
+这意味着，调用移动构造，或移动赋值操作会退化为拷贝构造和拷贝赋值操作。这种回退的自动操作在表中用灰色底纹标出。
+
+当使用 `=default` 或 `=delete` 定义或删除移动构造函数或移动赋值运算符时，只能得到定义的 `=default` 或 `=delete` 的移动构造函数或移动赋值运算符。后果是：拷贝构造函数和拷贝构造运算符会被设置为 `=delete`，此时若调用拷贝操作就会发生编译错误。
+
+下面的代码演示了典型的浅拷贝问题（相似的例子在《C++ Primer Plus》P352 12.1.2 中也有明确的提及）：
+
+```C++  
+#include <cstddef>
+
+/*
+    演示一个没有明确定义深拷贝和移动语义的类在进行默认拷贝（浅拷贝）时，
+    由于重复删除同一地址所发生的未定义行为。
+*/
+
+class BigClass
+{
+    private:
+        int * __array;
+        std::size_t length;
+
+    public:
+        BigClass(std::size_t __len = 0) : __array(new int[__len]), length(__len) {}
+
+        /*
+            期间没有明确定义深拷贝和移动语义
+        */
+
+        ~BigClass() { delete __array; }
+};
+
+int main(int argc, char const *argv[])
+{
+    /**
+     * 创建了两个对象 A，B。A 仅仅拷贝了自己的成员变量 __array 所指向内存的地址给 B，
+     * 因此对象 A 和 B 持有同一个地址的数据，当 main 函数运行结束，对象 A，B 调用析构函数就会将同一片内存释放两次，
+     * 造成未定义行为。
+    */
+
+    BigClass objectA(100);
+    BigClass objectB = objectA;
+
+    return 0;
+}
+```
+
+## C.22 让默认操作保持一致
+
+这个规则解释起来也很简单，如果在拷贝构建函数中实现了深拷贝，一定不能将拷贝赋值运算符设成默认，比如下面的例子，会造成未定义行为：
+
+```C++
+#include <iostream>
+
+/*
+    明确了深拷贝构造函数，
+    但是拷贝运算符却用的是默认的，这也会造成未定义行为。
+*/
+struct Strange
+{
+    public:
+        int * __data;
+
+    Strange() : __data(new int(2011)) {}
+
+    // 使用了深拷贝
+    Strange(const Strange & __dat) : __data(new int(*__dat.__data)) {}
+
+    // 使用了浅拷贝
+    Strange & operator=(const Strange & __dat) = default;
+
+    ~Strange() { delete __data; }
+};
+
+int main(int argc, char const *argv[])
+{
+    Strange objectA;
+    Strange objectB(objectA);   // 使用深拷贝
+
+    puts("Deep Copy:");
+    printf("ObjectA Value = %d\tAddress = %p\nObjectB Value = %d\tAddress = %p\n",
+    *(objectA.__data), objectA.__data, *(objectB.__data), objectB.__data);
+
+    Strange objectC;
+
+    /*
+        使用浅拷贝。
+        显然两个对象同时持有同一片内存上的指针，
+        在析构时会将同一片内存释放两次，造成未定义行为。
+    */
+    objectC = objectA;          
+
+    puts("Shallow Copy:");
+    printf("ObjectA Value = %d\tAddress = %p\nObjectB Value = %d\tAddress = %p\n",
+    *(objectA.__data), objectA.__data, *(objectC.__data), objectC.__data);
+
+
+    return EXIT_SUCCESS;
+}
+
+```
+
+## LICENCE：[MIT LICENCE](https://github.com/JesseZ332623/CPP_Core_Guidelines_Analysis/blob/master/LICENSE)
+
 ## Author: [JesseZ332623](https://github.com/JesseZ332623)
 
-## Latest Updata: 2024.02.17
+## Latest Updata: 2024.02.19

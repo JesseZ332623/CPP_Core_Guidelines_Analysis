@@ -1372,7 +1372,7 @@ int main(int argc, char const *argv[])
 }
 ```
 
-## C.22 让默认操作保持一致
+### C.22 让默认操作保持一致
 
 这个规则解释起来也很简单，如果在拷贝构建函数中实现了深拷贝，一定不能将拷贝赋值运算符设成默认，比如下面的例子，会造成未定义行为：
 
@@ -1424,8 +1424,201 @@ int main(int argc, char const *argv[])
 
     return EXIT_SUCCESS;
 }
-
 ```
+
+### C.42 若构造函数无法构造出有效对象，则应该抛出异常
+
+如果使用无效的对象，总得在使用之前检查对象的状态，这显然是低效的。
+
+```C++
+#include <stdio.h>
+#include <string>
+
+#include <stdexcept>
+
+class FileDisk
+{
+    private:
+        FILE * filePointer;
+        bool valid;
+
+    public:
+        FileDisk(const std::string & __filePath) : filePointer(fopen(__filePath.c_str(), "r")), valid(false) 
+        {
+            /*
+                如果出现打开文件失败的情况，直接抛异常，
+                这里的处理比较直接，工作中不会这么用。
+            */
+            if (!filePointer) { throw std::invalid_argument("Invalid File Path!"); }
+
+            valid = true;
+        }
+
+        /*低效！*/
+        bool inValid() { return (valid == true); }
+
+        ~FileDisk() { fclose(filePointer); }
+};                                                                                                               
+```
+
+### C.45 不要定义仅初始化数据成员的默认构造函数，而应该使用成员初始化器（C++11）
+
+代码常常胜过千言万语，譬如下面 `WidgetImpro` 类的实现：
+
+```C++
+class WidgetImpro
+{
+    private:
+        int width{640};
+        int height{480};
+        bool frame{false};
+        bool visible{true};
+
+        int getHeight(const int __width) { return __width * 3 / 4; }
+
+    public:
+        WidgetImpro() = default;
+
+        explicit WidgetImpro(const int __width) noexcept : width(__width), height(getHeight(__width)) {}
+
+        WidgetImpro(const int __width, const int __height) noexcept : width(__width), height(__height) {}
+
+        friend std::ostream & operator<<(std::ostream & __os, const WidgetImpro & __widget)
+        {
+            __os << std::boolalpha << __widget.width << " * " << __widget.height
+                 << ", Frame: " << __widget.frame
+                 << ", Visible: " << __widget.visible;
+
+            return __os;
+        }
+};
+```
+
+作者在设计新类的时候，遵循以下方法：
+
+- 在类的主体定义默认行为
+- 明确定义的构造函数仅用来改变类的行为
+
+### C.46 默认情况下，把单参数的构造函数声明为 `explicit`
+
+一个没有 `explicit` 声明的单参数构造函数其实是一个转换构造函数，其行为往往会出人意料。
+
+举一个浅显的例子：
+
+```C++
+class MyClass
+{
+    private:
+        int value{0};
+
+    public:
+        /*没有 explicit 修饰的单参构造函数*/
+        MyClass(const int __val) noexcept : value(__val) {}
+
+        /*......*/
+};
+
+void function(MyClass __myClass) { /*....*/ }
+
+int main(int argc, char const *argv[])
+{
+    /*
+        看似类型错误，实际上它的语法等价于：
+
+        function(MyClass(114514));
+
+        由于没有 explicit 关键字限制，
+        右值 114514 直接通过 MyClass 的构造函数完成了类型转换，这往往不易察觉。
+    */
+    function(114514);
+    return 0;
+}
+```
+
+再来看一个刁钻的例子：
+
+```C++
+#include <iostream>
+#include <iomanip>
+
+namespace Distance
+{
+    class MyDistance
+    {
+        private:
+            double meter;       // 数据，单位：米
+
+        public:
+            /*
+                单参构建函数没有 explicit 关键字
+            */
+            //explicit 
+            MyDistance(const double __dis) noexcept : meter(__dis) {}
+
+            // 将两个对象的私有数据相加并返回一个新对象
+            friend MyDistance operator+(const MyDistance & __disA, const MyDistance & __disB) 
+            { 
+                return MyDistance(__disA.meter + __disB.meter); 
+            }
+
+            // 输出该类的私有数据
+            friend std::ostream & operator<<(std::ostream & __os, const MyDistance & __myDis)
+            {
+                __os << __myDis.meter << " Meter.";
+
+                return __os;
+            }
+    };
+
+    /*
+        C++11 新增的 用户定义字面量，可以让表达式更具可读性。
+
+        表达式 operator"" _Km(100) 等价于 100_Km
+    */
+    namespace Unit
+    {
+        MyDistance operator "" _Km(long double __d) { return MyDistance(1000 * __d); }
+
+        MyDistance operator "" _M(long double __m) { return MyDistance(__m); }
+
+        MyDistance operator "" _Dm(long double __d) { return MyDistance(__d / 10); }
+
+        MyDistance operator "" _Cm(long double __c) { return MyDistance(__c / 100); }
+    }
+}
+
+int main(int argc, char const *argv[])
+{
+    using namespace Distance::Unit;
+
+    /*小数点输出不超过 7 位*/
+    std::cout << std::setprecision(7);
+
+    // 没有任何问题
+    std::cout << "1.0_Km + 2.0_Dm + 3.0_Cm = " << 1.0_Km + 2.0_Dm + 3.0_Cm << '\n';
+
+    /* 
+        由于 Distance::MyDistance 类的单参构造函数没有被 expicit 关键字修饰，5.5 后面没有跟用户定义字面量，表达式
+
+        4.2_Km + 5.5 + 10.0_M + 0.3_Cm
+
+        会等价于：
+
+        operator+(operator+(operator+(operator "" _Km(4.2), Distance::MyDistance(5.5)), operator"" _M(10.0)), operator ""_Cm(0.3));
+
+        显然，5.5 会通过类构造函数完成类型转换，得出的结果会不符合直觉且不易发现。
+
+        但是如果该类的单参构造函数被 expicit 关键字修饰，编辑器很快就会报错：没有与这些操作数匹配的 "+" 运算符
+    */
+    std::cout << "4.2_Km + 5.5_Dm + 10.0_M + 0.3_Cm = " << 4.2_Km + 5.5 + 10.0_M + 0.3_Cm << '\n';
+
+    return 0;
+}
+```
+
+因此，最好把单参数的构造函数声明为 `explicit`，避免这种不易察觉的类型转换。
+
+### C.47 ~ C.48 的问题太过老生常谈，因此不赘述
 
 ## LICENCE：[MIT LICENCE](https://github.com/JesseZ332623/CPP_Core_Guidelines_Analysis/blob/master/LICENSE)
 

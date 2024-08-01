@@ -1,5 +1,7 @@
 # 《C++ Core Guidelines Analysis》 学习笔记
 
+![cover](https://gw.alicdn.com/imgextra/i1/247466491/O1CN01dqDxRJ1xovjQJpyYb_!!2-item_pic.png_.webp)
+
 ![starCount](https://img.shields.io/github/stars/JesseZ332623/CPP_Core_Guidelines_Analysis)
 
 - [3.2 运用依赖注入化解](#32-运用依赖注入化解)

@@ -31,6 +31,7 @@
       8. [C.47 ~ C.48 的问题太过老生常谈，因此不赘述](#c47--c48-的问题太过老生常谈因此不赘述)
       9. [C.86 使 `==` 对操作数的类型对称](#c86-使--对操作数的类型对称)
       10. [C.87 当心基类上的 `==` 运算符重载](#c87-当心基类上的--运算符重载)
+      11. [C.120 （仅）使用类的层次结构来表示具有内在层次结构的概念](#c120-仅使用类的层次结构来表示具有内在层次结构的概念)
    7. [LICENCE：MIT LICENCE](#licencemit-licence)
    8. [Author: JesseZ332623](#author-jessez332623)
    9. [Latest Updata: 2024.08.2](#latest-updata-2024082)
@@ -1642,6 +1643,10 @@ int main(int argc, char const *argv[])
 
 见 [`equalOperatorOverloading.cpp
 `](https://github.com/JesseZ332623/CPP_Core_Guidelines_Analysis/blob/master/src/equalOperatorOverloading.cpp)
+
+### C.120 （仅）使用类的层次结构来表示具有内在层次结构的概念
+
+见 [`checkBox.cpp`](https://github.com/JesseZ332623/CPP_Core_Guidelines_Analysis/blob/master/src/checkBox.cpp)
 
 ## LICENCE：[MIT LICENCE](https://github.com/JesseZ332623/CPP_Core_Guidelines_Analysis/blob/master/LICENSE)
 

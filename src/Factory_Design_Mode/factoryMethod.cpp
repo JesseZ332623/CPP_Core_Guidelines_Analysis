@@ -3,9 +3,7 @@
 #include <random>
 
 #ifndef ADDITIONAL
-
 #define ADDITIONAL true
-
 #endif // ADDITIONAL
 
 using namespace MyLib::MyLoger;

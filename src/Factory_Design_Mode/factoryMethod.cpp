@@ -42,6 +42,9 @@ struct Employee {
         virtual ~Employee() {}
 };
 
+/**
+ * @brief 程序员类，继承自 Employee。
+*/
 struct Programer : public Employee
 {
     void show(void) const override {
@@ -57,6 +60,9 @@ struct Programer : public Employee
     }
 };
 
+/**
+ * @brief 设计师类，继承自 Employee。
+*/
 struct Desinger : public Employee
 {
     void show(void) const override {
@@ -109,6 +115,9 @@ struct Department
     virtual ~Department() {}
 };
 
+/**
+ * @brief IT 部门类，继承自 Department
+*/
 struct ITDepartment : public Department
 {
     Employee * createEmployee() const override {
@@ -117,6 +126,9 @@ struct ITDepartment : public Department
     }
 };
 
+/**
+ * @brief UI 部门，继承自 Department
+*/
 struct UIDepartment : public Department
 {
     Employee * createEmployee() const override {
@@ -147,7 +159,7 @@ int main(int argc, char const *argv[])
 
 #if ADDITIONAL
     SecurityDepartment  securityDepartment {};
-    Employee * guardA     = securityDepartment.onboard();
+    Employee * guardA = securityDepartment.onboard();
     delete guardA;
 #endif
 

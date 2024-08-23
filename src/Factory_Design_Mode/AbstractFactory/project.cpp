@@ -9,7 +9,7 @@ void ITProject::assignTo(const int __employeeID)
         "Assing IT project:\n\t<" + this->getProjectName() + ">\n"
     );
     NOTIFY_LOG(
-        "to programer\n\tID = [" + std::to_string(this->getEmployeeID()) + "]\n"
+        "to programer ID = [" + std::to_string(this->getEmployeeID()) + "]\n"
     );
     printSplitLine(35, '-');
 }
@@ -43,7 +43,7 @@ void UIProject::assignTo(const int __employeeID)
         "Assing IT project:\n\t<" + this->getProjectName() + ">\n"
     );
     NOTIFY_LOG(
-        "to designer\n\tID = [" + std::to_string(this->getEmployeeID()) + "]\n"
+        "to designer ID = [" + std::to_string(this->getEmployeeID()) + "]\n"
     );
     printSplitLine(35, '-');
 }

@@ -18,7 +18,7 @@ int main(int argc, char const *argv[])
     departManager.changeDepartment(&itDepart);   // 切换生产线
 
     auto programerA = departManager.createEmployee();
-    auto projectB   = departManager.createProject("Web page H5 Code");
+    auto projectB   = departManager.createProject("Web page H5 Code 2024.3.1");
     projectB->assignTo(programerA->getEmployeeID());
 
     projectA->show();
